@@ -1,1 +1,4 @@
-/*** ã‚·ãƒ¼ãƒ³ã®æç”»*/extern void scene(double t);
+/*
+** ƒV[ƒ“‚Ì•`‰æ
+*/
+extern void scene(double t);

@@ -1,1 +1,9 @@
-/*** ç°¡æ˜“ãƒˆãƒ©ãƒƒã‚¯ãƒœãƒ¼ãƒ«å‡¦ç†*/extern void trackballInit(void);extern void trackballRegion(int w, int h);extern void trackballStart(int x, int y);extern void trackballMotion(int x, int y);extern void trackballStop(int x, int y);extern double *trackballRotation(void);
+/*
+** ŠÈˆÕƒgƒ‰ƒbƒNƒ{[ƒ‹ˆ—
+*/
+extern void trackballInit(void);
+extern void trackballRegion(int w, int h);
+extern void trackballStart(int x, int y);
+extern void trackballMotion(int x, int y);
+extern void trackballStop(int x, int y);
+extern double *trackballRotation(void);
