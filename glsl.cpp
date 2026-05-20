@@ -1,19 +1,13 @@
+Ôªø/*
+** GLSL Èñ¢ÈÄ£„ÅÆÈñ¢Êï∞„Éù„Ç§„É≥„Çø
+*/
+#include "glsl.h"
+
+/* Ê®ôÊ∫ñ„É©„Ç§„Éñ„É©„É™ */
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(WIN32)
-#  include "glut.h"
-#  include "glext.h"
-#elif defined(__APPLE__) || defined(MACOSX)
-#  include <GLUT/glut.h>
-#else
-#  define GL_GLEXT_PROTOTYPES
-#  include <GL/glut.h>
-#endif
-
-#include "glsl.h"
-
-#if defined(WIN32)
+#if defined(_WIN32)
 PFNGLATTACHSHADERPROC glAttachShader;
 PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation;
 PFNGLBLENDEQUATIONSEPARATEPROC glBlendEquationSeparate;
@@ -107,19 +101,20 @@ PFNGLVERTEXATTRIB4UBVPROC glVertexAttrib4ubv;
 PFNGLVERTEXATTRIB4UIVPROC glVertexAttrib4uiv;
 PFNGLVERTEXATTRIB4USVPROC glVertexAttrib4usv;
 PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
+PFNGLACTIVETEXTUREPROC glActiveTexture;
 #endif
 
 /*
-** GLSL ÇÃèâä˙âª
+** GLSL „ÅÆÂàùÊúüÂåñ
 */
 int glslInit(void)
 {
   int error = 0;
-  
-#if defined(WIN32)
+
+#if defined(_WIN32)
 #define PADDR(functype, funcname) \
   ((funcname = (functype) wglGetProcAddress( #funcname )) == 0)
-  
+
   error |= PADDR(PFNGLATTACHSHADERPROC, glAttachShader);
   error |= PADDR(PFNGLBINDATTRIBLOCATIONPROC, glBindAttribLocation);
   error |= PADDR(PFNGLBLENDEQUATIONSEPARATEPROC, glBlendEquationSeparate);
@@ -213,15 +208,16 @@ int glslInit(void)
   error |= PADDR(PFNGLVERTEXATTRIB4UIVPROC, glVertexAttrib4uiv);
   error |= PADDR(PFNGLVERTEXATTRIB4USVPROC, glVertexAttrib4usv);
   error |= PADDR(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer);
-  
+  error |= PADDR(PFNGLACTIVETEXTUREPROC, glActiveTexture);
+
   if (error) fprintf(stderr, "Could not obtain all of entry points.\n");
 #endif
-  
+
   return error;
 }
 
 /*
-** ÉVÉFÅ[É_Å[ÇÃÉ\Å[ÉXÉvÉçÉOÉâÉÄÇÉÅÉÇÉäÇ…ì«Ç›çûÇﬁ
+** „Ç∑„Çß„Éº„ÉÄ„Éº„ÅÆ„ÇΩ„Éº„Çπ„Éó„É≠„Ç∞„É©„É†„Çí„É°„É¢„É™„Å´Ë™≠„ÅøËæº„ÇÄ
 */
 int readShaderSource(GLuint shader, const char *file)
 {
@@ -229,58 +225,58 @@ int readShaderSource(GLuint shader, const char *file)
   const GLchar *source;
   GLsizei length;
   int ret;
-  
-  /* ÉtÉ@ÉCÉãÇäJÇ≠ */
+
+  /* „Éï„Ç°„Ç§„É´„ÇíÈñã„Åè */
   fp = fopen(file, "rb");
   if (fp == NULL) {
     perror(file);
     return -1;
   }
-  
-  /* ÉtÉ@ÉCÉãÇÃññîˆÇ…à⁄ìÆÇµåªç›à íuÅiÇ¬Ç‹ÇËÉtÉ@ÉCÉãÉTÉCÉYÅjÇìæÇÈ */
+
+  /* „Éï„Ç°„Ç§„É´„ÅÆÊú´Â∞æ„Å´ÁßªÂãï„ÅóÁèæÂú®‰ΩçÁΩÆÔºà„Å§„Åæ„Çä„Éï„Ç°„Ç§„É´„Çµ„Ç§„Ç∫Ôºâ„ÇíÂæó„Çã */
   fseek(fp, 0L, SEEK_END);
   length = ftell(fp);
-  
-  /* ÉtÉ@ÉCÉãÉTÉCÉYÇÃÉÅÉÇÉäÇämï€ */
+
+  /* „Éï„Ç°„Ç§„É´„Çµ„Ç§„Ç∫„ÅÆ„É°„É¢„É™„ÇíÁ¢∫‰øù */
   source = (GLchar *)malloc(length);
   if (source == NULL) {
     fprintf(stderr, "Could not allocate read buffer.\n");
     return -1;
   }
-  
-  /* ÉtÉ@ÉCÉãÇêÊì™Ç©ÇÁì«Ç›çûÇﬁ */
+
+  /* „Éï„Ç°„Ç§„É´„ÇíÂÖàÈ†≠„Åã„ÇâË™≠„ÅøËæº„ÇÄ */
   fseek(fp, 0L, SEEK_SET);
   ret = fread((void *)source, 1, length, fp) != (size_t)length;
   fclose(fp);
-  
-  /* ÉVÉFÅ[É_ÇÃÉ\Å[ÉXÉvÉçÉOÉâÉÄÇÃÉVÉFÅ[É_ÉIÉuÉWÉFÉNÉgÇ÷ÇÃì«Ç›çûÇ› */
+
+  /* „Ç∑„Çß„Éº„ÉÄ„ÅÆ„ÇΩ„Éº„Çπ„Éó„É≠„Ç∞„É©„É†„ÅÆ„Ç∑„Çß„Éº„ÉÄ„Ç™„Éñ„Ç∏„Çß„ÇØ„Éà„Å∏„ÅÆË™≠„ÅøËæº„Åø */
   if (ret)
     fprintf(stderr, "Could not read file: %s.\n", file);
   else
     glShaderSource(shader, 1, &source, &length);
-  
-  /* ämï€ÇµÇΩÉÅÉÇÉäÇÃäJï˙ */
+
+  /* Á¢∫‰øù„Åó„Åü„É°„É¢„É™„ÅÆÈñãÊîæ */
   free((void *)source);
-  
+
   return ret;
 }
 
 /*
-** ÉVÉFÅ[É_ÇÃèÓïÒÇï\é¶Ç∑ÇÈ
+** „Ç∑„Çß„Éº„ÉÄ„ÅÆÊÉÖÂ†±„ÇíË°®Á§∫„Åô„Çã
 */
 void printShaderInfoLog(GLuint shader)
 {
   GLsizei bufSize;
-  
+
   glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &bufSize);
-  
+
   if (bufSize > 1) {
     GLchar *infoLog;
-    
+
     infoLog = (GLchar *)malloc(bufSize);
     if (infoLog != NULL) {
       GLsizei length;
-      
+
       glGetShaderInfoLog(shader, bufSize, &length, infoLog);
       fprintf(stderr, "InfoLog:\n%s\n\n", infoLog);
       free(infoLog);
@@ -291,21 +287,21 @@ void printShaderInfoLog(GLuint shader)
 }
 
 /*
-** ÉvÉçÉOÉâÉÄÇÃèÓïÒÇï\é¶Ç∑ÇÈ
+** „Éó„É≠„Ç∞„É©„É†„ÅÆÊÉÖÂ†±„ÇíË°®Á§∫„Åô„Çã
 */
 void printProgramInfoLog(GLuint program)
 {
   GLsizei bufSize;
-  
+
   glGetProgramiv(program, GL_INFO_LOG_LENGTH , &bufSize);
-  
+
   if (bufSize > 1) {
     GLchar *infoLog;
-    
+
     infoLog = (GLchar *)malloc(bufSize);
     if (infoLog != NULL) {
       GLsizei length;
-      
+
       glGetProgramInfoLog(program, bufSize, &length, infoLog);
       fprintf(stderr, "InfoLog:\n%s\n\n", infoLog);
       free(infoLog);

@@ -1,4 +1,4 @@
-#if defined(WIN32)
+ï»¿#if defined(WIN32)
 #  include "glut.h"
 #elif defined(__APPLE__) || defined(MACOSX)
 #  include <GLUT/glut.h>
@@ -9,14 +9,14 @@
 #include <math.h>
 #include "scene.h"
 
-#define PI 3.1415926535897932384626433832795 /* ‰~ü—¦@@@ */
+#define PI 3.1415926535897932384626433832795 /* å††å‘¨ç‡ã€€ã€€ã€€ */
 
 /*
-** ƒ^ƒCƒ‹‚Ì•`‰æ
+** ã‚¿ã‚¤ãƒ«ã®æç”»
 */
 static void tile(double w, double d, int nw, int nd)
 {
-  /* ƒ^ƒCƒ‹‚ÌF */
+  /* ã‚¿ã‚¤ãƒ«ã®è‰² */
   static const GLfloat color[][4] = {
     { 0.6, 0.6, 0.6, 1.0 },
     { 0.3, 0.3, 0.3, 1.0 }
@@ -43,11 +43,11 @@ static void tile(double w, double d, int nw, int nd)
 }
 
 /*
-** ” ‚Ì•`‰æ
+** ç®±ã®æç”»
 */
 static void box(double x, double y, double z)
 {
-  /* ’¸“_ƒf[ƒ^ */
+  /* é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ */
   const GLdouble vertex[][3] = {
     { 0.0, 0.0, 0.0 },
     {   x, 0.0, 0.0 },
@@ -59,7 +59,7 @@ static void box(double x, double y, double z)
     { 0.0,   y,   z },
   };
   
-  /* –Êƒf[ƒ^ */
+  /* é¢ãƒ‡ãƒ¼ã‚¿ */
   static const GLdouble *face[][4] = {
     { vertex[0], vertex[1], vertex[2], vertex[3] },
     { vertex[1], vertex[5], vertex[6], vertex[2] },
@@ -69,7 +69,7 @@ static void box(double x, double y, double z)
     { vertex[3], vertex[2], vertex[6], vertex[7] },
   };
   
-  /* –Ê‚Ì–@üƒxƒNƒgƒ‹ */
+  /* é¢ã®æ³•ç·šãƒ™ã‚¯ãƒˆãƒ« */
   static const GLdouble normal[][3] = {
     { 0.0, 0.0,-1.0 },
     { 1.0, 0.0, 0.0 },
@@ -79,7 +79,7 @@ static void box(double x, double y, double z)
     { 0.0, 1.0, 0.0 },
   };
   
-  /* ” ‚ÌF */
+  /* ç®±ã®è‰² */
   static const GLfloat color[] = { 0.8, 0.8, 0.2, 1.0 };
   
   int i, j;
@@ -96,7 +96,7 @@ static void box(double x, double y, double z)
 }
 
 /*
-** ƒV[ƒ“‚Ì•`‰æ
+** ã‚·ãƒ¼ãƒ³ã®æç”»
 */
 void scene(double t)
 {
@@ -104,19 +104,19 @@ void scene(double t)
   static const double r = 1.5;
   double wt = 2.0 * PI * t;
 
-  /* ƒ^ƒCƒ‹‚ğ•`‚­ */
+  /* ã‚¿ã‚¤ãƒ«ã‚’æã */
   glPushMatrix();
   glTranslated(-3.0, -2.0, -3.0);
   tile(1.0, 1.0, 6, 6);
   glPopMatrix();
   
-  /* ” ‚ğ•`‚­ */
+  /* ç®±ã‚’æã */
   glPushMatrix();
   glTranslated(-1.0, -1.5, -1.0);
   box(2.0, 1.0, 2.0);
   glPopMatrix();
   
-  /* ‹…‚ğ•`‚­ */
+  /* çƒã‚’æã */
   glPushMatrix();
   glTranslated(r * cos(wt), 1.0, r * sin(wt));
   glColor4fv(red);

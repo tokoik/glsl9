@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #if defined(WIN32)
@@ -15,64 +15,64 @@ PFNGLMULTTRANSPOSEMATRIXDPROC glMultTransposeMatrixd;
 #include "glsl.h"
 
 /*
-** �V�F�[�_�I�u�W�F�N�g
+** シェーダオブジェクト
 */
 static GLuint vertShader;
 static GLuint fragShader;
 static GLuint gl2Program;
 
 /*
-** ����
+** 光源
 */
-static const GLfloat lightpos[] = { 4.0, 9.0, 5.0, 1.0 }; /* �ʒu�@�@�@�@�@�@�@ */
-static const GLfloat lightcol[] = { 1.0, 1.0, 1.0, 1.0 }; /* ���ڌ����x�@�@�@�@ */
-static const GLfloat lightdim[] = { 0.2, 0.2, 0.2, 1.0 }; /* �e���̊g�U���ˋ��x */
-static const GLfloat lightblk[] = { 0.0, 0.0, 0.0, 1.0 }; /* �e���̋��ʔ��ˋ��x */
-static const GLfloat lightamb[] = { 0.1, 0.1, 0.1, 1.0 }; /* �������x�@�@�@�@ */
+static const GLfloat lightpos[] = { 4.0, 9.0, 5.0, 1.0 }; /* 位置　　　　　　　 */
+static const GLfloat lightcol[] = { 1.0, 1.0, 1.0, 1.0 }; /* 直接光強度　　　　 */
+static const GLfloat lightdim[] = { 0.2, 0.2, 0.2, 1.0 }; /* 影内の拡散反射強度 */
+static const GLfloat lightblk[] = { 0.0, 0.0, 0.0, 1.0 }; /* 影内の鏡面反射強度 */
+static const GLfloat lightamb[] = { 0.1, 0.1, 0.1, 1.0 }; /* 環境光強度　　　　 */
 
 /*
-** �e�N�X�`��
+** テクスチャ
 */
-#define TEXWIDTH  512                                     /* �e�N�X�`���̕��@�@ */
-#define TEXHEIGHT 512                                     /* �e�N�X�`���̍����@ */
+#define TEXWIDTH  512                                     /* テクスチャの幅　　 */
+#define TEXHEIGHT 512                                     /* テクスチャの高さ　 */
 
 /*
-** ������
+** 初期化
 */
 static void init(void)
 {
-  /* �V�F�[�_�v���O�����̃R���p�C���^�����N���ʂ𓾂�ϐ� */
+  /* シェーダプログラムのコンパイル／リンク結果を得る変数 */
   GLint compiled, linked;
   
-  /* �e�N�X�`���̊��蓖�� */
+  /* テクスチャの割り当て */
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, TEXWIDTH, TEXHEIGHT, 0,
     GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
   
-  /* �e�N�X�`�����g��E�k��������@�̎w�� */
+  /* テクスチャを拡大・縮小する方法の指定 */
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   
-  /* �e�N�X�`���̌J��Ԃ����@�̎w�� */
+  /* テクスチャの繰り返し方法の指定 */
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
   
-  /* �������ރ|���S���̃e�N�X�`�����W�l�̂q�ƃe�N�X�`���Ƃ̔�r���s���悤�ɂ��� */
+  /* 書き込むポリゴンのテクスチャ座標値のＲとテクスチャとの比較を行うようにする */
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
   
-  /* �����q�̒l���e�N�X�`���̒l�ȉ��Ȃ�^�i�܂�����j */
+  /* もしＲの値がテクスチャの値以下なら真（つまり日向） */
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
   
-  /* ��r�̌��ʂ��P�x�l�Ƃ��ē��� */
+  /* 比較の結果を輝度値として得る */
   glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
   
 #if 0
-  /* �e�N�X�`�����W�Ɏ��_���W�n�ɂ����镨�̂̍��W�l��p���� */
+  /* テクスチャ座標に視点座標系における物体の座標値を用いる */
   glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
   glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
   glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
   glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 
-  /* ���������e�N�X�`�����W�����̂܂� (S, T, R, Q) �Ɏg�� */
+  /* 生成したテクスチャ座標をそのまま (S, T, R, Q) に使う */
   static const GLdouble genfunc[][4] = {
     { 1.0, 0.0, 0.0, 0.0 },
     { 0.0, 1.0, 0.0, 0.0 },
@@ -85,27 +85,27 @@ static void init(void)
   glTexGendv(GL_Q, GL_EYE_PLANE, genfunc[3]);
 #endif
 
-  /* �����ݒ� */
+  /* 初期設定 */
   glClearColor(0.3, 0.3, 1.0, 1.0);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   
-  /* �����̏����ݒ� */
+  /* 光源の初期設定 */
   glEnable(GL_LIGHT0);
   glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
 
-  /* GLSL �̏����� */
+  /* GLSL の初期化 */
   if (glslInit()) exit(1);
   
-  /* �V�F�[�_�I�u�W�F�N�g�̍쐬 */
+  /* シェーダオブジェクトの作成 */
   vertShader = glCreateShader(GL_VERTEX_SHADER);
   fragShader = glCreateShader(GL_FRAGMENT_SHADER);
   
-  /* �V�F�[�_�̃\�[�X�v���O�����̓ǂݍ��� */
+  /* シェーダのソースプログラムの読み込み */
   if (readShaderSource(vertShader, "shadow.vert")) exit(1);
   if (readShaderSource(fragShader, "shadow.frag")) exit(1);
   
-  /* �o�[�e�b�N�X�V�F�[�_�̃\�[�X�v���O�����̃R���p�C�� */
+  /* バーテックスシェーダのソースプログラムのコンパイル */
   glCompileShader(vertShader);
   glGetShaderiv(vertShader, GL_COMPILE_STATUS, &compiled);
   printShaderInfoLog(vertShader);
@@ -114,7 +114,7 @@ static void init(void)
     exit(1);
   }
   
-  /* �t���O�����g�V�F�[�_�̃\�[�X�v���O�����̃R���p�C�� */
+  /* フラグメントシェーダのソースプログラムのコンパイル */
   glCompileShader(fragShader);
   glGetShaderiv(fragShader, GL_COMPILE_STATUS, &compiled);
   printShaderInfoLog(fragShader);
@@ -123,18 +123,18 @@ static void init(void)
     exit(1);
   }
   
-  /* �v���O�����I�u�W�F�N�g�̍쐬 */
+  /* プログラムオブジェクトの作成 */
   gl2Program = glCreateProgram();
   
-  /* �V�F�[�_�I�u�W�F�N�g�̃V�F�[�_�v���O�����ւ̓o�^ */
+  /* シェーダオブジェクトのシェーダプログラムへの登録 */
   glAttachShader(gl2Program, vertShader);
   glAttachShader(gl2Program, fragShader);
   
-  /* �V�F�[�_�I�u�W�F�N�g�̍폜 */
+  /* シェーダオブジェクトの削除 */
   glDeleteShader(vertShader);
   glDeleteShader(fragShader);
   
-  /* �V�F�[�_�v���O�����̃����N */
+  /* シェーダプログラムのリンク */
   glLinkProgram(gl2Program);
   glGetProgramiv(gl2Program, GL_LINK_STATUS, &linked);
   printProgramInfoLog(gl2Program);
@@ -143,10 +143,10 @@ static void init(void)
     exit(1);
   }
   
-  /* �V�F�[�_�v���O�����̓K�p */
+  /* シェーダプログラムの適用 */
   glUseProgram(gl2Program);
 
-  /* �e�N�X�`�����j�b�g�O���w�肷�� */
+  /* テクスチャユニット０を指定する */
   glUniform1i(glGetUniformLocation(gl2Program, "texture"), 0);
   
 #if defined(WIN32)
@@ -157,73 +157,73 @@ static void init(void)
 
 
 /****************************
-** GLUT �̃R�[���o�b�N�֐� **
+** GLUT のコールバック関数 **
 ****************************/
 
-/* �g���b�N�{�[�������p�֐��̐錾 */
+/* トラックボール処理用関数の宣言 */
 #include "trackball.h"
 
-/* �V�[����`���֐��̐錾 */
+/* シーンを描く関数の宣言 */
 #include "scene.h"
 
-/* �A�j���[�V�����̃T�C�N�� */
+/* アニメーションのサイクル */
 #define FRAMES 600
 
 static void display(void)
 {
-  GLint viewport[4];       /* �r���[�|�[�g�̕ۑ��p�@�@�@�@ */
-  GLdouble modelview[16];  /* ���f���r���[�ϊ��s��̕ۑ��p */
-  GLdouble projection[16]; /* �����ϊ��s��̕ۑ��p�@�@�@�@ */
-  static int frame = 0;    /* �t���[�����̃J�E���g�@�@�@�@ */
-  double t = (double)frame / (double)FRAMES; /* �o�ߎ��ԁ@ */
+  GLint viewport[4];       /* ビューポートの保存用　　　　 */
+  GLdouble modelview[16];  /* モデルビュー変換行列の保存用 */
+  GLdouble projection[16]; /* 透視変換行列の保存用　　　　 */
+  static int frame = 0;    /* フレーム数のカウント　　　　 */
+  double t = (double)frame / (double)FRAMES; /* 経過時間　 */
 
   if (++frame >= FRAMES) frame = 0;
 
   /*
-  ** ��P�X�e�b�v�F�f�v�X�e�N�X�`���̍쐬
+  ** 第１ステップ：デプステクスチャの作成
   */
   
-  /* �f�v�X�o�b�t�@���N���A���� */
+  /* デプスバッファをクリアする */
   glClear(GL_DEPTH_BUFFER_BIT);
   
-  /* ���݂̃r���[�|�[�g��ۑ����Ă��� */
+  /* 現在のビューポートを保存しておく */
   glGetIntegerv(GL_VIEWPORT, viewport);
   
-  /* �r���[�|�[�g���e�N�X�`���̃T�C�Y�ɐݒ肷�� */
+  /* ビューポートをテクスチャのサイズに設定する */
   glViewport(0, 0, TEXWIDTH, TEXHEIGHT);
   
-  /* ���݂̓����ϊ��s���ۑ����Ă��� */
+  /* 現在の透視変換行列を保存しておく */
   glGetDoublev(GL_PROJECTION_MATRIX, projection);
   
-  /* �����ϊ��s���P�ʍs��ɐݒ肷�� */
+  /* 透視変換行列を単位行列に設定する */
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   
-  /* �����ʒu�����_�Ƃ��V�[��������Ɏ��܂�悤���f���r���[�ϊ��s���ݒ肷�� */
+  /* 光源位置を視点としシーンが視野に収まるようモデルビュー変換行列を設定する */
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gluPerspective(40.0, (GLdouble)TEXWIDTH / (GLdouble)TEXHEIGHT, 1.0, 20.0);
   gluLookAt(lightpos[0], lightpos[1], lightpos[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-  /* �ݒ肵�����f���r���[�ϊ��s���ۑ����Ă��� */
+  /* 設定したモデルビュー変換行列を保存しておく */
   glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
 
-  /* �f�v�X�o�b�t�@�̓��e�������擾����̂Ńt���[���o�b�t�@�ɂ͏������܂Ȃ� */
+  /* デプスバッファの内容だけを取得するのでフレームバッファには書き込まない */
   glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-  /* ���������ĉA�e�t�����s�v�Ȃ̂Ń��C�e�B���O���I�t�ɂ��� */
+  /* したがって陰影付けも不要なのでライティングをオフにする */
   glDisable(GL_LIGHTING);
 
-  /* �f�v�X�o�b�t�@�ɂ͔w�ʂ̃|���S���̉��s�����L�^����悤�ɂ��� */
+  /* デプスバッファには背面のポリゴンの奥行きを記録するようにする */
   glCullFace(GL_FRONT);
 
-  /* �V�[����`�悷�� */
+  /* シーンを描画する */
   scene(t);
 
-  /* �f�v�X�o�b�t�@�̓��e���e�N�X�`���������ɓ]������ */
+  /* デプスバッファの内容をテクスチャメモリに転送する */
   glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, TEXWIDTH, TEXHEIGHT);
 
-  /* �ʏ�̕`��̐ݒ�ɖ߂� */
+  /* 通常の描画の設定に戻す */
   glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
   glMatrixMode(GL_PROJECTION);
   glLoadMatrixd(projection);
@@ -232,44 +232,44 @@ static void display(void)
   glCullFace(GL_BACK);
   
   /*
-  ** ��Q�X�e�b�v�F�S�̂̕`��
+  ** 第２ステップ：全体の描画
   */
   
-  /* �t���[���o�b�t�@�ƃf�v�X�o�b�t�@���N���A���� */
+  /* フレームバッファとデプスバッファをクリアする */
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-  /* ���f���r���[�ϊ��s��̐ݒ� */
+  /* モデルビュー変換行列の設定 */
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   
-  /* ���_�̈ʒu��ݒ肷��i���̂̕������Ɉړ�����j*/
+  /* 視点の位置を設定する（物体の方を奥に移動する）*/
   glTranslated(0.0, 0.0, -10.0);
   
-  /* �g���b�N�{�[�����̉�]��^���� */
+  /* トラックボール式の回転を与える */
   glMultMatrixd(trackballRotation());
   
-  /* �����̈ʒu��ݒ肷�� */
+  /* 光源の位置を設定する */
   glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
   
-  /* �e�N�X�`���ϊ��s���ݒ肷�� */
+  /* テクスチャ変換行列を設定する */
   glMatrixMode(GL_TEXTURE);
   glLoadIdentity();
   
-  /* �e�N�X�`�����W�� [-1,1] �͈̔͂� [0,1] �͈̔͂Ɏ��߂� */
+  /* テクスチャ座標の [-1,1] の範囲を [0,1] の範囲に収める */
   glTranslated(0.5, 0.5, 0.5);
   glScaled(0.5, 0.5, 0.5);
   
-  /* �e�N�X�`���̃��f���r���[�ϊ��s��Ɠ����ϊ��s��̐ς������� */
+  /* テクスチャのモデルビュー変換行列と透視変換行列の積をかける */
   glMultMatrixd(modelview);
   
-  /* ���݂̃��f���r���[�ϊ��̋t�ϊ��������Ă��� */
+  /* 現在のモデルビュー変換の逆変換をかけておく */
   glMultTransposeMatrixd(trackballRotation());
   glTranslated(0.0, 0.0, 10.0);
   
-  /* ���f���r���[�ϊ��s��ɖ߂� */
+  /* モデルビュー変換行列に戻す */
   glMatrixMode(GL_MODELVIEW);
   
-  /* �e�N�X�`���}�b�s���O�ƃe�N�X�`�����W�̎���������L���ɂ��� */
+  /* テクスチャマッピングとテクスチャ座標の自動生成を有効にする */
   glEnable(GL_TEXTURE_2D);
 #if 0
   glEnable(GL_TEXTURE_GEN_S);
@@ -278,14 +278,14 @@ static void display(void)
   glEnable(GL_TEXTURE_GEN_Q);
 #endif
   
-  /* �����̖��邳������̕����ł̖��邳�ɐݒ� */
+  /* 光源の明るさを日向の部分での明るさに設定 */
   glLightfv(GL_LIGHT0, GL_DIFFUSE, lightcol);
   glLightfv(GL_LIGHT0, GL_SPECULAR, lightcol);
   
-  /* �V�[����`�悷�� */
+  /* シーンを描画する */
   scene(t);
   
-  /* �e�N�X�`���}�b�s���O�ƃe�N�X�`�����W�̎��������𖳌��ɂ��� */
+  /* テクスチャマッピングとテクスチャ座標の自動生成を無効にする */
 #if 0
   glDisable(GL_TEXTURE_GEN_S);
   glDisable(GL_TEXTURE_GEN_T);
@@ -294,36 +294,36 @@ static void display(void)
 #endif
   glDisable(GL_TEXTURE_2D);
   
-  /* �_�u���o�b�t�@�����O */
+  /* ダブルバッファリング */
   glutSwapBuffers();
 }
 
 static void resize(int w, int h)
 {
-  /* �E�B���h�E�T�C�Y�̏k���𐧌����� */
+  /* ウィンドウサイズの縮小を制限する */
   if (w < TEXWIDTH || h < TEXHEIGHT) {
     if (w < TEXWIDTH) w = TEXWIDTH;
     if (h < TEXHEIGHT) h = TEXHEIGHT;
     glutReshapeWindow(w, h);
   }
 
-  /* �g���b�N�{�[������͈� */
+  /* トラックボールする範囲 */
   trackballRegion(w, h);
   
-  /* �E�B���h�E�S�̂��r���[�|�[�g�ɂ��� */
+  /* ウィンドウ全体をビューポートにする */
   glViewport(0, 0, w, h);
   
-  /* �����ϊ��s��̎w�� */
+  /* 透視変換行列の指定 */
   glMatrixMode(GL_PROJECTION);
   
-  /* �����ϊ��s��̏����� */
+  /* 透視変換行列の初期化 */
   glLoadIdentity();
   gluPerspective(40.0, (double)w / (double)h, 1.0, 100.0);
 }
 
 static void idle(void)
 {
-  /* ��ʂ̕`���ւ� */
+  /* 画面の描き替え */
   glutPostRedisplay();
 }
 
@@ -333,11 +333,11 @@ static void mouse(int button, int state, int x, int y)
   case GLUT_LEFT_BUTTON:
     switch (state) {
     case GLUT_DOWN:
-      /* �g���b�N�{�[���J�n */
+      /* トラックボール開始 */
       trackballStart(x, y);
       break;
     case GLUT_UP:
-      /* �g���b�N�{�[����~ */
+      /* トラックボール停止 */
       trackballStop(x, y);
       break;
     default:
@@ -351,7 +351,7 @@ static void mouse(int button, int state, int x, int y)
 
 static void motion(int x, int y)
 {
-  /* �g���b�N�{�[���ړ� */
+  /* トラックボール移動 */
   trackballMotion(x, y);
 }
 
@@ -361,7 +361,7 @@ static void keyboard(unsigned char key, int x, int y)
   case 'q':
   case 'Q':
   case '\033':
-    /* ESC �� q �� Q ���^�C�v������I�� */
+    /* ESC か q か Q をタイプしたら終了 */
     exit(0);
   default:
     break;
@@ -369,7 +369,7 @@ static void keyboard(unsigned char key, int x, int y)
 }
 
 /*
-** ���C���v���O����
+** メインプログラム
 */
 int main(int argc, char *argv[])
 {
