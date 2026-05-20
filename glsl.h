@@ -11,6 +11,8 @@
 //#    pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
 #    define _USE_MATH_DEFINES
 #    define _CRT_SECURE_NO_WARNINGS
+#  else
+#    define GL_GLEXT_PROTOTYPES
 #  endif
 #  include <GL/glut.h>
 #  include <GL/glext.h>
@@ -116,7 +118,22 @@ extern PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 extern PFNGLACTIVETEXTUREPROC glActiveTexture;
 #endif
 
-extern int glslInit(void);
+/*
+** GLSL の初期化
+*/
+extern int glslInit();
+
+/*
+** シェーダーのソースプログラムをメモリに読み込む
+*/
 extern int readShaderSource(GLuint shader, const char *file);
+
+/*
+** シェーダの情報を表示する
+*/
 extern void printShaderInfoLog(GLuint shader);
+
+/*
+** プログラムの情報を表示する
+*/
 extern void printProgramInfoLog(GLuint program);
