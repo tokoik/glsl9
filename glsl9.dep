@@ -1,4 +1,0 @@
-glsl.o: glsl.cpp glsl.h
-main.o: main.cpp glsl.h trackball.h scene.h
-scene.o: scene.cpp scene.h
-trackball.o: trackball.cpp trackball.h
