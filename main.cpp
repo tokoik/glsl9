@@ -39,7 +39,7 @@ static const GLfloat lightamb[] = { 0.1, 0.1, 0.1, 1.0 }; /* 環境光強度　�
 /*
 ** 初期化
 */
-static void init(void)
+static void init()
 {
   /* シェーダプログラムのコンパイル／リンク結果を得る変数 */
   GLint compiled, linked;
@@ -169,7 +169,7 @@ static void init(void)
 /* アニメーションのサイクル */
 #define FRAMES 600
 
-static void display(void)
+static void display()
 {
   GLint viewport[4];       /* ビューポートの保存用　　　　 */
   GLdouble modelview[16];  /* モデルビュー変換行列の保存用 */
@@ -321,7 +321,7 @@ static void resize(int w, int h)
   gluPerspective(40.0, (double)w / (double)h, 1.0, 100.0);
 }
 
-static void idle(void)
+static void idle()
 {
   /* 画面の描き替え */
   glutPostRedisplay();

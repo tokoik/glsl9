@@ -107,7 +107,7 @@ PFNGLACTIVETEXTUREPROC glActiveTexture;
 /*
 ** GLSL の初期化
 */
-int glslInit(void)
+int glslInit()
 {
   int error = 0;
 

@@ -2,7 +2,7 @@
 
 varying vec4 shadow;
 
-void main(void)
+void main()
 {
   vec3 position = vec3(gl_ModelViewMatrix * gl_Vertex);
   vec3 normal = normalize(gl_NormalMatrix * gl_Normal);
