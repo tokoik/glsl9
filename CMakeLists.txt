@@ -25,8 +25,10 @@ set(SHADER_FILES
     shadow.frag
 )
 
-# リソースファイル
-set(RESOURCE_FILES
+# シェーダファイル
+set(SHADER_FILES
+    shadow.vert
+    shadow.frag
 )
 
 # ソリューションエクスプローラー用のグループ分け
