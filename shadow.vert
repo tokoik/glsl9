@@ -2,6 +2,9 @@
 
 // shadow.vert
 
+// 頂点色
+varying vec4 color;
+
 void main()
 {
   // 頂点のクリッピング座標値
@@ -32,6 +35,9 @@ void main()
   // 鏡面反射率
   float specular = pow(max(dot(normal, halfway), 0.0),
     gl_FrontMaterial.shininess);
+
+  // 頂点色をフラグメントシェーダに送る
+  color = gl_Color;
 
   // 環境光強度はフラグメントシェーダで設定するので頂点の色に含めない
   gl_FrontColor = gl_LightSource[0].diffuse * gl_Color * diffuse

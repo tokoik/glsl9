@@ -19,9 +19,7 @@
 */
 static const GLfloat lightpos[] = { 4.0f, 9.0f, 5.0f, 1.0f }; /* 位置　　　　　　　 */
 static const GLfloat lightcol[] = { 1.0f, 1.0f, 1.0f, 1.0f }; /* 直接光強度　　　　 */
-static const GLfloat lightdim[] = { 0.2f, 0.2f, 0.2f, 1.0f }; /* 影内の拡散反射強度 */
-static const GLfloat lightblk[] = { 0.0f, 0.0f, 0.0f, 1.0f }; /* 影内の鏡面反射強度 */
-static const GLfloat lightamb[] = { 0.1f, 0.1f, 0.1f, 1.0f }; /* 環境光強度　　　　 */
+static const GLfloat lightamb[] = { 0.2f, 0.2f, 0.2f, 1.0f }; /* 環境光強度　　　　 */
 
 /*
 ** プログラムオブジェクト
@@ -98,6 +96,9 @@ static void init()
     fprintf(stderr, "Link error.\n");
     exit(1);
   }
+
+  /* シャドウマップのサンプラの uniform 変数の場所を得る */
+  colorLoc = glGetUniformLocation(gl2Program, "texture");
 
   /* テクスチャユニット０を指定する */
   glActiveTexture(GL_TEXTURE0);
