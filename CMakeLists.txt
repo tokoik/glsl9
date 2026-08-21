@@ -13,13 +13,22 @@ set(SOURCES
 
 # ヘッダファイル
 set(HEADERS
+    glsl.h
     scene.h
     trackball.h
+)
+
+# シェーダファイル
+set(SHADER_FILES
 )
 
 # リソースファイル
 set(RESOURCE_FILES
 )
+
+# ソリューションエクスプローラー用のグループ分け
+source_group("Shader Files" FILES ${SHADER_FILES})
+source_group("Resource Files" FILES ${RESOURCE_FILES})
 
 if(APPLE)
 
@@ -27,7 +36,7 @@ if(APPLE)
     set(ICON_FILE "opengl.icns")
 
     # アプリケーションバンドルとして実行ファイルを作成する
-    add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${RESOURCE_FILES} ${ICON_FILE})
+    add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${SHADER_FILES} ${RESOURCE_FILES} ${ICON_FILE})
 
     # GLUT と OpenGL の Framework を検索してリンクする
     find_library(GLUT_LIBRARY GLUT)
@@ -53,10 +62,8 @@ if(APPLE)
         XCODE_GENERATE_SCHEME ON
     )
 
-    # リソースの配置設定
-    set_source_files_properties(${RESOURCE_FILES} ${ICON_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-
     # リソースファイルなどをアプリケーションバンドル内の Resources に組み込む
+    set_source_files_properties(${SHADER_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     set_source_files_properties(${RESOURCE_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     set_source_files_properties(${ICON_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
@@ -66,7 +73,7 @@ if(APPLE)
 elseif(WIN32)
 
     # Windows (Visual Studio) の設定
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADER_FILES} ${RESOURCE_FILES})
 
     # glext.h と khrplatform.h をダウンロードする
     include(FetchContent)
@@ -105,12 +112,19 @@ elseif(WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE FREEGLUT_STATIC)
 
     # 起動時に読み込めるようにビルド後にリソースファイルを実行ファイルと同じ階層にコピーする
-    foreach(TEX_FILE IN LISTS RESOURCE_FILES)
+    foreach(RESOURCE_FILE IN LISTS SHADER_FILES RESOURCE_FILES)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/${TEX_FILE}"
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+                "${CMAKE_CURRENT_SOURCE_DIR}/${RESOURCE_FILE}"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+        )
     endforeach()
+
+    # Visual Studio で実行・デバッグする際に、シェーダやリソースの変更があれば自動的にコピーされるようにする
+    set_source_files_properties(${SHADER_FILES} ${RESOURCE_FILES} PROPERTIES
+        VS_COPY_TO_OUT_DIR PreserveNewest
+    )
 
     # このプロジェクトを Visual Studio のスタートアッププロジェクトとして設定する
     set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
@@ -121,7 +135,7 @@ elseif(WIN32)
 else()
 
     # Ubuntu Linux (その他UNIX系) の設定
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADER_FILES} ${RESOURCE_FILES})
 
     # OpenGL と GLUT を探す
     find_package(OpenGL REQUIRED)
@@ -137,11 +151,13 @@ else()
     )
 
     # 起動時に読み込めるようにビルド後にリソースファイルを実行ファイルと同じ階層にコピーする
-    foreach(TEX_FILE IN LISTS RESOURCE_FILES)
+    foreach(RESOURCE_FILE IN LISTS SHADER_FILES RESOURCE_FILES)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/${TEX_FILE}"
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+                "${CMAKE_CURRENT_SOURCE_DIR}/${RESOURCE_FILE}"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+        )
     endforeach()
 
 endif()

@@ -1,34 +1,40 @@
-﻿#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#if defined(WIN32)
-//#  pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
-#  include "glut.h"
-#  include "glext.h"
-PFNGLMULTTRANSPOSEMATRIXDPROC glMultTransposeMatrixd;
-#elif defined(__APPLE__) || defined(MACOSX)
-#  include <GLUT/glut.h>
-#else
-#  define GL_GLEXT_PROTOTYPES
-#  include <GL/glut.h>
-#endif
+﻿/* OpenGL / GLSL 関連の宣言 */
 #include "glsl.h"
 
-/*
-** シェーダオブジェクト
-*/
-static GLuint vertShader;
-static GLuint fragShader;
-static GLuint gl2Program;
+/* 法線マップを作成する関数の宣言 */
+#include "normalmap.h"
+
+/* シーンを描く関数の宣言 */
+#include "scene.h"
+
+/* トラックボール処理用関数の宣言 */
+#include "trackball.h"
+
+/* 標準ライブラリ */
+#include <stdio.h>
+#include <stdlib.h>
+
+/* 1 ならティーポットを描く */
+#define DRAW_TEAPOT 0
 
 /*
 ** 光源
 */
-static const GLfloat lightpos[] = { 4.0, 9.0, 5.0, 1.0 }; /* 位置　　　　　　　 */
-static const GLfloat lightcol[] = { 1.0, 1.0, 1.0, 1.0 }; /* 直接光強度　　　　 */
-static const GLfloat lightdim[] = { 0.2, 0.2, 0.2, 1.0 }; /* 影内の拡散反射強度 */
-static const GLfloat lightblk[] = { 0.0, 0.0, 0.0, 1.0 }; /* 影内の鏡面反射強度 */
-static const GLfloat lightamb[] = { 0.1, 0.1, 0.1, 1.0 }; /* 環境光強度　　　　 */
+static const GLfloat lightpos[] = { 4.0f, 9.0f, 5.0f, 1.0f }; /* 位置　　　　　　　 */
+static const GLfloat lightcol[] = { 1.0f, 1.0f, 1.0f, 1.0f }; /* 直接光強度　　　　 */
+static const GLfloat lightdim[] = { 0.2f, 0.2f, 0.2f, 1.0f }; /* 影内の拡散反射強度 */
+static const GLfloat lightblk[] = { 0.0f, 0.0f, 0.0f, 1.0f }; /* 影内の鏡面反射強度 */
+static const GLfloat lightamb[] = { 0.1f, 0.1f, 0.1f, 1.0f }; /* 環境光強度　　　　 */
+
+/*
+** プログラムオブジェクト
+*/
+static GLuint gl2Program;
+
+/*
+** テクスチャのサンプラの uniform 変数の場所
+*/
+static GLuint colorLoc;
 
 /*
 ** テクスチャ
@@ -41,70 +47,20 @@ static const GLfloat lightamb[] = { 0.1, 0.1, 0.1, 1.0 }; /* 環境光強度　�
 */
 static void init()
 {
-  /* シェーダプログラムのコンパイル／リンク結果を得る変数 */
-  GLint compiled, linked;
-  
-  /* テクスチャの割り当て */
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, TEXWIDTH, TEXHEIGHT, 0,
-    GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
-  
-  /* テクスチャを拡大・縮小する方法の指定 */
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  
-  /* テクスチャの繰り返し方法の指定 */
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-  
-  /* 書き込むポリゴンのテクスチャ座標値のＲとテクスチャとの比較を行うようにする */
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-  
-  /* もしＲの値がテクスチャの値以下なら真（つまり日向） */
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  
-  /* 比較の結果を輝度値として得る */
-  glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
-  
-#if 0
-  /* テクスチャ座標に視点座標系における物体の座標値を用いる */
-  glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-  glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-  glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-  glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-
-  /* 生成したテクスチャ座標をそのまま (S, T, R, Q) に使う */
-  static const GLdouble genfunc[][4] = {
-    { 1.0, 0.0, 0.0, 0.0 },
-    { 0.0, 1.0, 0.0, 0.0 },
-    { 0.0, 0.0, 1.0, 0.0 },
-    { 0.0, 0.0, 0.0, 1.0 },
-  };
-  glTexGendv(GL_S, GL_EYE_PLANE, genfunc[0]);
-  glTexGendv(GL_T, GL_EYE_PLANE, genfunc[1]);
-  glTexGendv(GL_R, GL_EYE_PLANE, genfunc[2]);
-  glTexGendv(GL_Q, GL_EYE_PLANE, genfunc[3]);
-#endif
-
-  /* 初期設定 */
-  glClearColor(0.3, 0.3, 1.0, 1.0);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-  
-  /* 光源の初期設定 */
-  glEnable(GL_LIGHT0);
-  glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
-
   /* GLSL の初期化 */
   if (glslInit()) exit(1);
-  
+
   /* シェーダオブジェクトの作成 */
-  vertShader = glCreateShader(GL_VERTEX_SHADER);
-  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  
+  GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+  GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+
   /* シェーダのソースプログラムの読み込み */
   if (readShaderSource(vertShader, "shadow.vert")) exit(1);
   if (readShaderSource(fragShader, "shadow.frag")) exit(1);
-  
+
+  /* シェーダプログラムのコンパイル結果 */
+  GLint compiled;
+
   /* バーテックスシェーダのソースプログラムのコンパイル */
   glCompileShader(vertShader);
   glGetShaderiv(vertShader, GL_COMPILE_STATUS, &compiled);
@@ -113,7 +69,7 @@ static void init()
     fprintf(stderr, "Compile error in vertex shader.\n");
     exit(1);
   }
-  
+
   /* フラグメントシェーダのソースプログラムのコンパイル */
   glCompileShader(fragShader);
   glGetShaderiv(fragShader, GL_COMPILE_STATUS, &compiled);
@@ -122,18 +78,21 @@ static void init()
     fprintf(stderr, "Compile error in fragment shader.\n");
     exit(1);
   }
-  
+
   /* プログラムオブジェクトの作成 */
   gl2Program = glCreateProgram();
-  
+
   /* シェーダオブジェクトのシェーダプログラムへの登録 */
   glAttachShader(gl2Program, vertShader);
   glAttachShader(gl2Program, fragShader);
-  
-  /* シェーダオブジェクトの削除 */
+
+  /* シェーダオブジェクトに削除マークを付ける */
   glDeleteShader(vertShader);
   glDeleteShader(fragShader);
-  
+
+  /* シェーダプログラムのリンク結果 */
+  GLint linked;
+
   /* シェーダプログラムのリンク */
   glLinkProgram(gl2Program);
   glGetProgramiv(gl2Program, GL_LINK_STATUS, &linked);
@@ -142,12 +101,51 @@ static void init()
     fprintf(stderr, "Link error.\n");
     exit(1);
   }
-  
-  /* シェーダプログラムの適用 */
-  glUseProgram(gl2Program);
+
+#if defined(WIN32)
+  glActiveTexture =
+    (PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture");
+#endif
 
   /* テクスチャユニット０を指定する */
-  glUniform1i(glGetUniformLocation(gl2Program, "texture"), 0);
+  glActiveTexture(GL_TEXTURE0);
+
+  /* テクスチャオブジェクトの作成と結合 */
+  GLuint tex;
+  glGenTextures(1, &tex);
+  glBindTexture(GL_TEXTURE_2D, tex);
+
+  /* テクスチャを拡大・縮小する方法の指定 */
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+  /* テクスチャの繰り返し方法の指定 */
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+  /* 書き込むポリゴンのテクスチャ座標値のＲとテクスチャとの比較を行うようにする */
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+
+  /* もしＲの値がテクスチャの値以下なら真（つまり日向） */
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+  /* 比較の結果を輝度値として得る */
+  glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
+
+  /* テクスチャの割り当て */
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, TEXWIDTH, TEXHEIGHT, 0,
+    GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+
+  /* 初期設定 */
+  glClearColor(0.3f, 0.3f, 1.0f, 0.0f);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+
+  /* 光源の初期設定 */
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
+
   
 #if defined(WIN32)
   glMultTransposeMatrixd =
@@ -155,16 +153,10 @@ static void init()
 #endif
 }
 
-
 /****************************
 ** GLUT のコールバック関数 **
 ****************************/
 
-/* トラックボール処理用関数の宣言 */
-#include "trackball.h"
-
-/* シーンを描く関数の宣言 */
-#include "scene.h"
 
 /* アニメーションのサイクル */
 #define FRAMES 600
@@ -178,6 +170,12 @@ static void display()
   double t = (double)frame / (double)FRAMES; /* 経過時間　 */
 
   if (++frame >= FRAMES) frame = 0;
+
+  /* シェーダプログラムの適用 */
+  glUseProgram(gl2Program);
+
+  /* テクスチャのサンプラにテクスチャユニットを指定する */
+  glUniform1i(colorLoc, 0);
 
   /*
   ** 第１ステップ：デプステクスチャの作成
@@ -294,6 +292,9 @@ static void display()
 #endif
   glDisable(GL_TEXTURE_2D);
   
+  /* シェーダプログラムの適用解除 */
+  glUseProgram(0);
+
   /* ダブルバッファリング */
   glutSwapBuffers();
 }
@@ -309,13 +310,13 @@ static void resize(int w, int h)
 
   /* トラックボールする範囲 */
   trackballRegion(w, h);
-  
+
   /* ウィンドウ全体をビューポートにする */
   glViewport(0, 0, w, h);
-  
+
   /* 透視変換行列の指定 */
   glMatrixMode(GL_PROJECTION);
-  
+
   /* 透視変換行列の初期化 */
   glLoadIdentity();
   gluPerspective(40.0, (double)w / (double)h, 1.0, 100.0);
@@ -344,8 +345,8 @@ static void mouse(int button, int state, int x, int y)
       break;
     }
     break;
-    default:
-      break;
+  default:
+    break;
   }
 }
 
@@ -371,10 +372,9 @@ static void keyboard(unsigned char key, int x, int y)
 /*
 ** メインプログラム
 */
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   glutInit(&argc, argv);
-  glutInitWindowSize(TEXWIDTH, TEXHEIGHT);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
   glutCreateWindow(argv[0]);
   glutDisplayFunc(display);
@@ -382,7 +382,6 @@ int main(int argc, char *argv[])
   glutMouseFunc(mouse);
   glutMotionFunc(motion);
   glutKeyboardFunc(keyboard);
-  glutIdleFunc(idle);
   init();
   glutMainLoop();
   return 0;

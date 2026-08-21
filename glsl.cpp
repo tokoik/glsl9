@@ -223,7 +223,7 @@ int readShaderSource(GLuint shader, const char *file)
 {
   FILE *fp;
   const GLchar *source;
-  GLsizei length;
+  int length;
   int ret;
 
   /* ファイルを開く */
@@ -235,7 +235,7 @@ int readShaderSource(GLuint shader, const char *file)
 
   /* ファイルの末尾に移動し現在位置（つまりファイルサイズ）を得る */
   fseek(fp, 0L, SEEK_END);
-  length = ftell(fp);
+  length = (int)ftell(fp);
 
   /* ファイルサイズのメモリを確保 */
   source = (GLchar *)malloc(length);
