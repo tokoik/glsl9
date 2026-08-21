@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # ソースファイル
 set(SOURCES
     main.cpp
+    glsl.cpp
     scene.cpp
     trackball.cpp
 )
@@ -20,6 +21,8 @@ set(HEADERS
 
 # シェーダファイル
 set(SHADER_FILES
+    shadow.vert
+    shadow.frag
 )
 
 # リソースファイル

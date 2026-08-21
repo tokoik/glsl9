@@ -1,9 +1,13 @@
+#version 120
+
 // shadow.frag
 
+// シャドウマップ
 uniform sampler2DShadow texture;
-varying vec4 shadow;
  
 void main ()
 {
-  gl_FragColor = shadow + (gl_Color - shadow) * shadow2DProj(texture, gl_TexCoord[0]);
+  // フラグメントの色
+  gl_FragColor = gl_LightSource[0].ambient * gl_FrontMaterial.ambient
+               + shadow2DProj(texture, gl_TexCoord[0]) * gl_Color;
 }

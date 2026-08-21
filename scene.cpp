@@ -1,15 +1,20 @@
-﻿#if defined(WIN32)
-#  include "glut.h"
-#elif defined(__APPLE__) || defined(MACOSX)
+﻿/* OpenGL */
+#if defined(__APPLE__)
+#  define GL_SILENCE_DEPRECATION
 #  include <GLUT/glut.h>
+#  include <OpenGL/glext.h>
 #else
+#  if defined(_MSC_VER)
+#    define _USE_MATH_DEFINES
+#    define _CRT_SECURE_NO_WARNINGS
+#  else
+#    define GL_GLEXT_PROTOTYPES
+#  endif
 #  include <GL/glut.h>
+#  include <GL/glext.h>
 #endif
-
 #include <math.h>
 #include "scene.h"
-
-#define PI 3.1415926535897932384626433832795 /* 円周率　　　 */
 
 /*
 ** タイルの描画
@@ -18,21 +23,26 @@ static void tile(double w, double d, int nw, int nd)
 {
   /* タイルの色 */
   static const GLfloat color[][4] = {
-    { 0.6, 0.6, 0.6, 1.0 },
-    { 0.3, 0.3, 0.3, 1.0 }
+    { 0.6f, 0.6f, 0.6f, 1.0f },
+    { 0.3f, 0.3f, 0.3f, 1.0f }
+  };
+  static const GLfloat specular[] = {
+    0.2f, 0.2f, 0.2f, 1.0f
   };
   
-  int i, j;
+  /* タイルの材質 */
+  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 40.0f);
 
   glNormal3d(0.0, 1.0, 0.0);
   glBegin(GL_QUADS);
-  for (j = 0; j < nd; ++j) {
+  for (int j = 0; j < nd; ++j) {
     GLdouble dj = d * j, djd = dj + d;
 
-    for (i = 0; i < nw; ++i) {
+    for (int i = 0; i < nw; ++i) {
       GLdouble wi = w * i, wiw = wi + w;
 
-      glColor4fv(color[(i + j) & 1]);
+      glColor3fv(color[(i + j) & 1]);
       glVertex3d(wi,  0.0, dj);
       glVertex3d(wi,  0.0, djd);
       glVertex3d(wiw, 0.0, djd);
@@ -80,15 +90,22 @@ static void box(double x, double y, double z)
   };
   
   /* 箱の色 */
-  static const GLfloat color[] = { 0.8, 0.8, 0.2, 1.0 };
-  
-  int i, j;
+  static const GLfloat color[] = {
+    0.8f, 0.8f, 0.2f, 1.0f
+  };
+  static const GLfloat specular[] = {
+    0.1f, 0.1f, 0.1f, 1.0f
+  };
 
-  glColor4fv(color);
+  /* 箱の材質 */
+  glColor3fv(color);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 20.0f);
+
   glBegin(GL_QUADS);
-  for (j = 0; j < 6; j++) {
+  for (int j = 0; j < 6; j++) {
     glNormal3dv(normal[j]);
-    for (i = 4; --i >= 0;) {
+    for (int i = 4; --i >= 0;) {
       glVertex3dv(face[j][i]);
     }
   }
@@ -100,9 +117,8 @@ static void box(double x, double y, double z)
 */
 void scene(double t)
 {
-  static const GLfloat red[] = { 0.8, 0.2, 0.2, 1.0 };
   static const double r = 1.5;
-  double wt = 2.0 * PI * t;
+  double wt = 2.0 * M_PI * t;
 
   /* タイルを描く */
   glPushMatrix();
@@ -119,7 +135,11 @@ void scene(double t)
   /* 球を描く */
   glPushMatrix();
   glTranslated(r * cos(wt), 1.0, r * sin(wt));
-  glColor4fv(red);
+  static const GLfloat red[] = { 0.8f, 0.2f, 0.2f, 1.0f };
+  static const GLfloat specular[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+  glColor3fv(red);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 20.0f);
   glutSolidSphere(0.9, 32, 16);
   glPopMatrix();
 }

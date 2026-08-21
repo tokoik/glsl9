@@ -1,25 +1,39 @@
-// shadow.vert
+#version 120
 
-varying vec4 shadow;
+// shadow.vert
 
 void main()
 {
-  vec3 position = vec3(gl_ModelViewMatrix * gl_Vertex);
-  vec3 normal = normalize(gl_NormalMatrix * gl_Normal);
-  vec3 light = normalize(gl_LightSource[0].position.xyz - position);
-  float diffuse = dot(light, normal);
-  
-  gl_FrontColor = gl_LightSource[0].ambient * gl_Color;
-  shadow = gl_FrontColor;
-  if (diffuse > 0.0) {
-    vec3 view = normalize(position);
-    vec3 halfway = normalize(light - view);
-    float specular = pow(max(dot(normal, halfway), 0.0), gl_FrontMaterial.shininess);
-	vec4 temp = gl_LightSource[0].diffuse * gl_Color * diffuse;
-	shadow += temp * 0.2;
-    gl_FrontColor += temp + gl_FrontLightProduct[0].specular * specular;
-  }
-  
-  gl_TexCoord[0] = gl_TextureMatrix[0] * gl_ModelViewMatrix * gl_Vertex;
+  // 頂点のクリッピング座標値
   gl_Position = ftransform();
+
+  // テクスチャ座標
+  gl_TexCoord[0] = gl_TextureMatrix[0] * gl_ModelViewMatrix * gl_Vertex;
+
+  // 視点座標系の頂点の位置
+  vec4 position = gl_ModelViewMatrix * gl_Vertex;
+
+  // 視点座標系の法線ベクトル
+  vec3 normal = normalize(gl_NormalMatrix * gl_Normal);
+
+  // 視点座標系の光線ベクトル
+  vec3 light = normalize((gl_LightSource[0].position * position.w
+    - gl_LightSource[0].position.w * position).xyz);
+
+  // 拡散反射率
+  float diffuse = max(dot(light, normal), 0.0);
+
+  // 視点座標系の視線ベクトル
+  vec3 view = -normalize(position.xyz);
+
+  // 視点座標系の中間ベクトル
+  vec3 halfway = normalize(light + view);
+
+  // 鏡面反射率
+  float specular = pow(max(dot(normal, halfway), 0.0),
+    gl_FrontMaterial.shininess);
+
+  // 環境光強度はフラグメントシェーダで設定するので頂点の色に含めない
+  gl_FrontColor = gl_LightSource[0].diffuse * gl_Color * diffuse
+                + gl_LightSource[0].specular * gl_FrontMaterial.specular * specular;
 }

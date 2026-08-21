@@ -1,9 +1,6 @@
 ﻿/* OpenGL / GLSL 関連の宣言 */
 #include "glsl.h"
 
-/* 法線マップを作成する関数の宣言 */
-#include "normalmap.h"
-
 /* シーンを描く関数の宣言 */
 #include "scene.h"
 
@@ -102,11 +99,6 @@ static void init()
     exit(1);
   }
 
-#if defined(WIN32)
-  glActiveTexture =
-    (PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture");
-#endif
-
   /* テクスチャユニット０を指定する */
   glActiveTexture(GL_TEXTURE0);
 
@@ -145,12 +137,6 @@ static void init()
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
-
-  
-#if defined(WIN32)
-  glMultTransposeMatrixd =
-    (PFNGLMULTTRANSPOSEMATRIXDPROC)wglGetProcAddress("glMultTransposeMatrixd");
-#endif
 }
 
 /****************************
@@ -381,6 +367,7 @@ int main(int argc, char* argv[])
   glutReshapeFunc(resize);
   glutMouseFunc(mouse);
   glutMotionFunc(motion);
+  glutIdleFunc(idle);
   glutKeyboardFunc(keyboard);
   init();
   glutMainLoop();

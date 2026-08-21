@@ -116,6 +116,7 @@ extern PFNGLVERTEXATTRIB4UIVPROC glVertexAttrib4uiv;
 extern PFNGLVERTEXATTRIB4USVPROC glVertexAttrib4usv;
 extern PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 extern PFNGLACTIVETEXTUREPROC glActiveTexture;
+extern PFNGLMULTTRANSPOSEMATRIXDPROC glMultTransposeMatrixd;
 #endif
 
 /*
