@@ -167,23 +167,23 @@ static void display()
   /*
   ** 第１ステップ：デプステクスチャの作成
   */
-  
+
   /* デプスバッファをクリアする */
   glClear(GL_DEPTH_BUFFER_BIT);
-  
+
   /* 現在のビューポートを保存しておく */
   glGetIntegerv(GL_VIEWPORT, viewport);
-  
+
   /* ビューポートをテクスチャのサイズに設定する */
   glViewport(0, 0, TEXWIDTH, TEXHEIGHT);
-  
+
   /* 現在の透視変換行列を保存しておく */
   glGetDoublev(GL_PROJECTION_MATRIX, projection);
-  
+
   /* 透視変換行列を単位行列に設定する */
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  
+
   /* 光源位置を視点としシーンが視野に収まるようモデルビュー変換行列を設定する */
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -215,45 +215,45 @@ static void display()
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glEnable(GL_LIGHTING);
   glCullFace(GL_BACK);
-  
+
   /*
   ** 第２ステップ：全体の描画
   */
-  
+
   /* フレームバッファとデプスバッファをクリアする */
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
+
   /* モデルビュー変換行列の設定 */
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  
+
   /* 視点の位置を設定する（物体の方を奥に移動する）*/
   glTranslated(0.0, 0.0, -10.0);
-  
+
   /* トラックボール式の回転を与える */
   glMultMatrixd(trackballRotation());
-  
+
   /* 光源の位置を設定する */
   glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
-  
+
   /* テクスチャ変換行列を設定する */
   glMatrixMode(GL_TEXTURE);
   glLoadIdentity();
-  
+
   /* テクスチャ座標の [-1,1] の範囲を [0,1] の範囲に収める */
   glTranslated(0.5, 0.5, 0.5);
   glScaled(0.5, 0.5, 0.5);
-  
+
   /* テクスチャのモデルビュー変換行列と透視変換行列の積をかける */
   glMultMatrixd(modelview);
-  
+
   /* 現在のモデルビュー変換の逆変換をかけておく */
   glMultTransposeMatrixd(trackballRotation());
   glTranslated(0.0, 0.0, 10.0);
-  
+
   /* モデルビュー変換行列に戻す */
   glMatrixMode(GL_MODELVIEW);
-  
+
   /* テクスチャマッピングとテクスチャ座標の自動生成を有効にする */
   glEnable(GL_TEXTURE_2D);
 #if 0
@@ -262,14 +262,14 @@ static void display()
   glEnable(GL_TEXTURE_GEN_R);
   glEnable(GL_TEXTURE_GEN_Q);
 #endif
-  
+
   /* 光源の明るさを日向の部分での明るさに設定 */
   glLightfv(GL_LIGHT0, GL_DIFFUSE, lightcol);
   glLightfv(GL_LIGHT0, GL_SPECULAR, lightcol);
-  
+
   /* シーンを描画する */
   scene(t);
-  
+
   /* テクスチャマッピングとテクスチャ座標の自動生成を無効にする */
 #if 0
   glDisable(GL_TEXTURE_GEN_S);
@@ -278,7 +278,7 @@ static void display()
   glDisable(GL_TEXTURE_GEN_Q);
 #endif
   glDisable(GL_TEXTURE_2D);
-  
+
   /* シェーダプログラムの適用解除 */
   glUseProgram(0);
 

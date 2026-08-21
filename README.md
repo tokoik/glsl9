@@ -113,11 +113,19 @@
 
 [第２回](https://github.com/tokoik/glsl2)の Gouraud シェーディングとほぼ同じ処理を行いますが、次の３点が異なります。
 
+<<<<<<< HEAD
 - 拡散反射係数（材質の色）を `gl_FrontMaterial.diffuse` ではなく `gl_Color` から得ます（scene.cpp では `glColor*()` で色を指定しています）。また、環境光による反射光強度は影の部分にも与える必要があるので、`ambient` という `varying` 変数でフラグメントシェーダに送ります。
 
   ```glsl
   // 環境項の反射光強度をフラグメントシェーダに送る
   ambient = gl_LightSource[0].ambient * gl_Color;
+=======
+- 拡散反射係数（材質の色）を `gl_FrontMaterial.diffuse` ではなく `gl_Color` から得ます（scene.cpp では `glColor*()` で色を指定しています）。同じ色は環境光による反射光強度の計算にも必要なので、`color` という `varying` 変数でフラグメントシェーダにも送ります。
+
+  ```glsl
+  // 頂点色をフラグメントシェーダに送る
+  color = gl_Color;
+>>>>>>> c08e6d6 (頂点色を varying 変数でフラグメントシェーダに渡すようにする)
   ```
 
 - 頂点のテクスチャ座標に、テクスチャ変換行列とモデルビュー変換行列を掛けた視点座標系の頂点位置を用います。
@@ -127,7 +135,11 @@
   gl_TexCoord[0] = gl_TextureMatrix[0] * gl_ModelViewMatrix * gl_Vertex;
   ```
 
+<<<<<<< HEAD
 - 環境光による反射光強度はフラグメントシェーダで加算するため頂点の色には含めず、拡散反射光と鏡面反射光のみを `gl_FrontColor` に設定します。
+=======
+- 環境光による反射光強度は、影の部分にも与える必要があるので頂点の色に含めず、フラグメントシェーダで加算します。
+>>>>>>> c08e6d6 (頂点色を varying 変数でフラグメントシェーダに渡すようにする)
 
   ```glsl
   // 環境光強度はフラグメントシェーダで設定するので頂点の色に含めない
@@ -139,7 +151,11 @@
 
 GLSL の組み込み関数 `shadow2DProj()` を使ってシャドウマップをサンプリングします。`GL_TEXTURE_COMPARE_FUNC` に `GL_LEQUAL` を設定してあるので、日向なら 1、影なら 0 が返ってきます。これをバーテックスシェーダで求めた頂点の色（拡散反射光強度＋鏡面反射光強度）の補間値 `gl_Color` に掛ければ、影の部分ではこれらが 0 になります。
 
+<<<<<<< HEAD
 そこに、影の部分にも与える環境光による反射光強度（バーテックスシェーダから `varying` 変数 `ambient` で受け取った値）を加算したものをフラグメントの色とします。これにより、日向と影を別々に描き分ける必要がなくなります。
+=======
+そこに、影の部分にも与える環境光による反射光強度を加えたものをフラグメントの色とします。反射係数には、バーテックスシェーダから `varying` 変数 `color` で受け取った頂点色の補間値を用います。これにより、日向と影を別々に描き分ける必要がなくなります。
+>>>>>>> c08e6d6 (頂点色を varying 変数でフラグメントシェーダに渡すようにする)
 
 ```glsl
 #version 120
@@ -149,12 +165,22 @@ GLSL の組み込み関数 `shadow2DProj()` を使ってシャドウマップを
 // シャドウマップ
 uniform sampler2DShadow texture;
 
+<<<<<<< HEAD
 // 環境項の反射光強度の補間値
 varying vec4 ambient;
+=======
+// 頂点色の補間値
+varying vec4 color;
+>>>>>>> c08e6d6 (頂点色を varying 変数でフラグメントシェーダに渡すようにする)
 
 void main ()
 {
   // フラグメントの色
+<<<<<<< HEAD
   gl_FragColor = shadow2DProj(texture, gl_TexCoord[0]) * gl_Color + ambient;
+=======
+  gl_FragColor = gl_LightSource[0].ambient * color
+               + shadow2DProj(texture, gl_TexCoord[0]) * gl_Color;
+>>>>>>> c08e6d6 (頂点色を varying 変数でフラグメントシェーダに渡すようにする)
 }
 ```
