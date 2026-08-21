@@ -5,12 +5,11 @@
 // シャドウマップ
 uniform sampler2DShadow texture;
 
-// 頂点色の補間値
-varying vec4 color;
+// 環境項の反射光強度の補間値
+varying vec4 ambient;
 
 void main ()
 {
   // フラグメントの色
-  gl_FragColor = gl_LightSource[0].ambient * color
-               + shadow2DProj(texture, gl_TexCoord[0]) * gl_Color;
+  gl_FragColor = shadow2DProj(texture, gl_TexCoord[0]) * gl_Color + ambient;
 }

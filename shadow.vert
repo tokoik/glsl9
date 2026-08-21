@@ -2,8 +2,8 @@
 
 // shadow.vert
 
-// 頂点色
-varying vec4 color;
+// 環境項の反射光強度
+varying vec4 ambient;
 
 void main()
 {
@@ -36,8 +36,8 @@ void main()
   float specular = pow(max(dot(normal, halfway), 0.0),
     gl_FrontMaterial.shininess);
 
-  // 頂点色をフラグメントシェーダに送る
-  color = gl_Color;
+  // 環境項の反射光強度をフラグメントシェーダに送る
+  ambient = gl_LightSource[0].ambient * gl_Color;
 
   // 環境光強度はフラグメントシェーダで設定するので頂点の色に含めない
   gl_FrontColor = gl_LightSource[0].diffuse * gl_Color * diffuse
