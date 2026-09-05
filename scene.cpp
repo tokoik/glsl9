@@ -58,7 +58,7 @@ static void tile(double w, double d, int nw, int nd)
 static void box(double x, double y, double z)
 {
   /* 頂点データ */
-  const GLdouble vertex[][3] = {
+  static const GLdouble vertex[][3] = {
     { 0.0, 0.0, 0.0 },
     {   x, 0.0, 0.0 },
     {   x,   y, 0.0 },
